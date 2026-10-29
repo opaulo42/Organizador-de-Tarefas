@@ -201,15 +201,16 @@ const r=await mergeZip(await JSZip.loadAsync(await file.arrayBuffer()),true);say
 const SC='https://www.googleapis.com/auth/drive.file',DN='Minhas_Notas_dados.zip';let TK=null,TKx=0,DB=0;
 const loadGsi=()=>new Promise((ok,no)=>{if(window.google?.accounts?.oauth2)return ok();const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.onload=ok;s.onerror=()=>no(new Error('Não foi possível carregar o login do Google. O Drive só funciona na versão hospedada (GitHub Pages etc.), com internet.'));document.head.appendChild(s)});
 function getToken(){return new Promise((ok,no)=>{if(TK&&Date.now()<TKx)return ok(TK);const cid=localStorage.getItem('mn_cid');if(!cid)return no(new Error('Informe o Client ID do Google.'));
-loadGsi().then(()=>{google.accounts.oauth2.initTokenClient({client_id:cid,scope:SC,callback:r=>{if(r.error)return no(new Error(r.error_description||r.error));TK=r.access_token;localStorage.removeItem('mn_sel');TKx=Date.now()+(r.expires_in-60)*1000;ok(TK)},error_callback:e=>no(new Error('Login cancelado ou bloqueado ('+(e.type||'erro')+').'))}).requestAccessToken({prompt:localStorage.getItem('mn_sel')?'select_account':''})}).catch(no)})}
-function drawDrive(){const cid=localStorage.getItem('mn_cid')||'',last=+localStorage.getItem('mn_last')||0;
+const go=()=>{try{google.accounts.oauth2.initTokenClient({client_id:cid,scope:SC,callback:r=>{if(r.error)return no(new Error(r.error_description||r.error));TK=r.access_token;localStorage.removeItem('mn_sel');TKx=Date.now()+(r.expires_in-60)*1000;ok(TK)},error_callback:e=>no(new Error(e.type==='popup_failed_to_open'?'O navegador bloqueou a janela de login. Permita pop-ups para este site e toque de novo.':'Login cancelado ou bloqueado ('+(e.type||'erro')+').'))}).requestAccessToken({prompt:localStorage.getItem('mn_sel')?'select_account':''})}catch(e){no(e)}};
+if(window.google?.accounts?.oauth2)go();else loadGsi().then(go).catch(no)})}
+function drawDrive(){loadGsi().catch(()=>{});const cid=localStorage.getItem('mn_cid')||'',last=+localStorage.getItem('mn_last')||0;
 $('box').innerHTML=`<h2 style="margin:0">☁ Google Drive</h2>
 <p style="color:var(--mut);font-size:14px">Guarda o arquivo ${DN} no seu Drive e junta as fichas dos seus aparelhos. Se a mesma ficha for editada em dois aparelhos, vale a mais recente.</p>
 <label>Client ID do Google</label><input id="dcid" value="${esc(cid)}" placeholder="xxxx.apps.googleusercontent.com">
 <p style="font-size:13px;color:var(--mut)">Última sincronização: ${last?new Date(last).toLocaleString('pt-BR'):'nunca'}</p>
 <div class="acts"><button class="btn" id="dGo">Sincronizar agora</button><button class="btn sec" id="dTr">Escolher outra conta</button></div><div class="fechar"><button class="btn sec" id="dX">Fechar</button></div>`;
 $('modal').style.display='flex';$('dX').onclick=close_;$('dGo').onclick=()=>{localStorage.setItem('mn_cid',$('dcid').value.trim());close_();driveSync()};$('dTr').onclick=()=>{localStorage.setItem('mn_cid',$('dcid').value.trim());localStorage.setItem('mn_sel','1');localStorage.removeItem('mn_fid');TK=null;close_();driveSync()}}
-$('bDrv').onclick=drawDrive;
+$('bDrv').onclick=drawDrive;if(localStorage.getItem('mn_cid'))loadGsi().catch(()=>{});
 async function driveSync(){if(DB)return;DB=1;
 try{if(typeof JSZip==='undefined')throw new Error('Biblioteca ZIP não carregada.');if(!navigator.onLine)throw new Error('Sem internet.');
 const t0=Date.now();say('Entrando no Google…');const H={Authorization:'Bearer '+await getToken()};let id=localStorage.getItem('mn_fid'),r0=null;
