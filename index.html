@@ -20,8 +20,8 @@ button,select,input,textarea{font:inherit}
 .bar input,.bar select{flex:1 1 180px;padding:10px;border:1px solid var(--bd);border-radius:10px;min-height:44px;background:#fff}
 #msg{margin:0 16px;padding:10px 12px;border-radius:10px;background:#e0ecff;display:none}
 #msg.w{background:#fff3d6}
-.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:0 16px 24px}
-@media(max-width:900px){.board{grid-template-columns:1fr}}
+.board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(270px,1fr);gap:12px;padding:0 16px 24px;overflow-x:auto;align-items:start}
+@media(max-width:900px){.board{grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:1fr;overflow:visible}}
 .col{background:#e9edf4;border-radius:14px;padding:10px;min-height:120px}
 .col h2{font-size:15px;margin:2px 4px 10px;display:flex;justify-content:space-between;align-items:center;gap:6px}
 .col h2 span.n{color:var(--mut);font-weight:400}
@@ -29,12 +29,15 @@ button,select,input,textarea{font:inherit}
 .ficha{background:var(--card);border-radius:12px;padding:12px;margin-bottom:10px;border-left:5px solid #9aa3b0;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06)}
 .ficha b{font-size:16px}.ficha small{color:var(--mut)}
 .ficha .emp{font-size:13px;color:#445}
-.s0{border-color:#8b95a3}.s1{border-color:#2563eb}.s2{border-color:#f59e0b}.s3{border-color:#16a34a}
+.s0{--c:#8b95a3;border-color:#8b95a3}.s1{--c:#2563eb;border-color:#2563eb}.s2{--c:#7c3aed;border-color:#7c3aed}.s3{--c:#d97706;border-color:#f59e0b}.s4{--c:#0d9488;border-color:#0d9488}.s5{--c:#16a34a;border-color:#16a34a}
+.col.c0{border-top:4px solid #8b95a3}.col.c1{border-top:4px solid #2563eb}.col.c2{border-top:4px solid #7c3aed}.col.c3{border-top:4px solid #d97706}.col.c4{border-top:4px solid #0d9488}.col.c5{border-top:4px solid #16a34a}
 .badge{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;color:#fff;margin-top:4px}
-.b0{background:#8b95a3}.b1{background:#2563eb}.b2{background:#d97706}.b3{background:#16a34a}
+.b0{background:#8b95a3}.b1{background:#2563eb}.b2{background:#7c3aed}.b3{background:#d97706}.b4{background:#0d9488}.b5{background:#16a34a}
 .obs{font-size:13px;color:#445;margin-top:6px;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.obs.open{display:block}.orow{display:flex;gap:8px;align-items:flex-end;margin-top:6px}.orow .obs{flex:1;min-width:0;margin-top:0}.tb{display:flex;gap:6px;align-items:center;margin-bottom:6px}.tb button{width:40px;height:36px;border:1px solid var(--bd);border-radius:8px;background:#fff;font-size:16px}.tb small{color:var(--mut)}.mais{white-space:nowrap;flex:none;background:none;border:0;color:var(--blue);padding:4px 0;font-size:13px;cursor:pointer}
 .fechar{display:flex;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)}
 .mh{display:flex;justify-content:space-between;align-items:center;gap:8px}.mh .btn{padding:8px 10px;font-size:14px;min-height:40px}
+.ck{flex:none;width:40px;height:40px;border-radius:50%;border:2px solid var(--c,#16a34a);background:#fff;color:var(--c,#16a34a);font-size:20px;line-height:1;cursor:pointer;padding:0}.ck:active,.ck.ok{background:var(--c,#16a34a);color:#fff}.ck.ok{cursor:default}.top .badge{white-space:normal;text-align:center;max-width:42%}
+.top{align-items:center;gap:12px}.prox{margin-top:8px;padding:6px 8px;border-radius:8px;background:#eef2f9;font-size:13px}.tt{flex:1;display:flex;flex-direction:column;line-height:1.3;min-width:0}.tt b{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tt b+b{font-weight:600;color:#445}.ficha{padding:14px}.ficha .emp{margin:10px 0 2px;font-size:14px}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.top .badge{margin:0;flex:none}.dst{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:2px;font-size:17px}.seta{background:none;border:0;font-size:24px;line-height:1;padding:6px 10px;cursor:pointer;color:var(--navy);transition:transform .15s}.seta.up{transform:rotate(180deg)}
 .mv{margin-top:8px;width:100%;padding:8px;border-radius:8px;border:1px solid var(--bd);background:#fff}
 .list{padding:0 16px 24px;display:grid;gap:10px}
@@ -49,6 +52,18 @@ button,select,input,textarea{font:inherit}
 .arq button{padding:6px 10px;border-radius:8px;border:1px solid var(--bd);background:#fff}
 .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
 .sync{font-size:12px;opacity:.85;width:100%}
+.ck svg,.seta svg{display:block;margin:auto}.seta{padding:4px 8px}
+.det{margin-top:10px;padding-top:12px;border-top:1px solid var(--bd);display:grid;gap:10px}
+.r{display:flex;justify-content:space-between;gap:12px;font-size:14px}.r span{color:var(--mut)}.r b{font-weight:600;text-align:right;word-break:break-word}
+.prox{margin:0;padding:8px 10px;border-radius:8px;border-left:4px solid var(--c,#2563eb);background:#f1f5fb;font-size:15px;display:flex;flex-direction:column}
+.prox span,.lb{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut)}
+.obsb{background:#f7f9fc;border:1px solid var(--bd);border-radius:8px;padding:8px 10px;font-size:14px;white-space:pre-wrap;word-break:break-word}
+.acx{display:flex;gap:8px}.acx .mv{margin:0;flex:1;min-width:0}.acx .ed{min-height:40px;padding:8px 12px;white-space:nowrap}
+.sec{background:#f6f8fc;border:1px solid var(--bd);border-radius:12px;padding:4px 12px 12px;margin-top:12px}.sec h3{margin:10px 0 2px}
+.box label.addf{text-align:center;border:1.5px dashed var(--blue);color:var(--blue);border-radius:10px;padding:10px;margin-top:10px;cursor:pointer;font-size:15px}
+.foot{position:sticky;bottom:0;background:#fff;margin:14px -16px -16px;padding:12px 16px 16px;border-top:1px solid var(--bd);border-radius:0 0 16px 16px}
+.foot .acts{margin-top:0}.foot .fechar{margin:10px 0 0;padding:0;border:0}#mSave{flex:1 1 130px;font-weight:600}
+.mh .btn{display:flex;align-items:center;gap:6px}
 </style></head><body>
 <header><h1>📒 Minhas Notas</h1>
 <button class="btn hd" id="bNova">+ Nova ficha</button>
@@ -57,13 +72,19 @@ button,select,input,textarea{font:inherit}
 <div class="sync" id="sync">● Salvo neste dispositivo (funciona sem internet)</div></header>
 <div class="bar">
 <input id="q" type="search" placeholder="Pesquisar NE, NF, empresa, destino, observações">
-<select id="fs"><option value="">Todos os status</option><option>Pendente</option><option>Para Fazer</option><option>Em andamento</option><option>Pronto</option></select>
-<select id="vw"><option value="board">Quadro</option><option value="list">Lista</option><option value="arq">Arquivadas</option></select></div>
+<select id="fs"><option value="">Todos os status</option><option>Pendente</option><option>No Estoque</option><option>No Sistema</option><option>Enviado para Financeiro</option><option>Dar baixa no sistema</option><option>Tudo Pronto</option></select>
+<select id="vw"><option value="board">Quadro</option><option value="list">Lista</option><option value="arq">Arquivadas</option></select>
+<button class="btn sec" id="bFt" style="display:none"></button></div>
 <p id="msg"></p>
 <main id="main"></main>
 <div id="modal"><div class="box" id="box"></div></div>
 <script>
-const S=['Pendente','Para Fazer','Em andamento','Pronto'];let EX=new Set(),OPEN=false;
+const S=['Pendente','No Estoque','No Sistema','Enviado para Financeiro','Dar baixa no sistema','Tudo Pronto'];
+const NEXT={'Pendente':'No Estoque','No Estoque':'No Sistema','No Sistema':'Enviado para Financeiro','Enviado para Financeiro':'Tudo Pronto','Dar baixa no sistema':'Tudo Pronto'};
+const ACAO={'Pendente':'Lançar no estoque','No Estoque':'Lançar no sistema','No Sistema':'Enviar ao financeiro','Enviado para Financeiro':'Finalizar a nota','Dar baixa no sistema':'Concluir a baixa no sistema'};
+const moeda=s=>{s=String(s||'').replace(/[^\d,.\-]/g,'');if(!s)return null;if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');else if(/^\d{1,3}(\.\d{3})+$/.test(s))s=s.replace(/\./g,'');const n=parseFloat(s);return isNaN(n)?null:Math.round(n*100)/100};
+const brl=n=>Number(n).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const MAP={'Aguardando':'No Sistema','Em andamento':'No Sistema','Cadastrado no Estoque':'No Sistema','Para Fazer':'No Estoque','Cadastrado':'No Estoque','Pronto':'Tudo Pronto'};let EX=new Set(),ABR=new Set();
 let db,fichas=[],M=null;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -78,7 +99,7 @@ Promise.resolve(fn(t)).then(v=>out=v);t.oncomplete=()=>ok(out);t.onerror=t.onabo
 const req=r=>new Promise((ok,no)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
 const getFiles=id=>req(db.transaction('arquivos').objectStore('arquivos').index('fichaId').getAll(id));
 async function load(){fichas=await req(db.transaction('fichas').objectStore('fichas').getAll());
-const vel=fichas.filter(f=>f.status==='Aguardando');if(vel.length){vel.forEach(f=>f.status='Em andamento');await run('fichas',t=>vel.forEach(f=>t.objectStore('fichas').put(f)))}
+const vel=fichas.filter(f=>MAP[f.status]);if(vel.length){vel.forEach(f=>f.status=MAP[f.status]);await run('fichas',t=>vel.forEach(f=>t.objectStore('fichas').put(f)))}
 render()}
 function match(f){const q=$('q').value.trim().toLowerCase();
 if(q&&![f.ne,f.nf,f.empresa,f.destino,f.obs].some(v=>String(v||'').toLowerCase().includes(q)))return false;
@@ -87,20 +108,26 @@ const fmtObs=t=>esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\*(.+?)\*/
 function wrap(m){const t=$('fob'),a=t.selectionStart,b=t.selectionEnd,v=t.value;t.value=v.slice(0,a)+m+v.slice(a,b)+m+v.slice(b);t.focus();t.setSelectionRange(a+m.length,b+m.length)}
 function obs(f){if(!f.obs)return '';const o=EX.has(f.id);
 return `<div class="orow"><div class="obs${o?' open':''}">${fmtObs(f.obs)}</div>`+(f.obs.length>70||f.obs.includes('\n')?`<button class="mais" data-ob="${f.id}">${o?'Ler menos':'Ler mais'}</button>`:'')+'</div>'}
-function card(f){const i=S.indexOf(f.status);
-return `<div class="ficha s${i}" draggable="true" data-id="${f.id}"><div class="top"><b>NE ${esc(f.ne)||'—'} | NF ${esc(f.nf)||'—'}</b><span class="badge b${i}">${f.status}</span></div>
-<div class="emp">${f.empresa?'Empresa: '+esc(f.empresa):''}</div><div class="dst"><small>${fmt(f.atualizada)}</small><button class="seta${OPEN?' up':''}" data-seta="1" aria-label="Mostrar ou ocultar detalhes">▾</button></div>
-${OPEN?`<div>Destino: ${esc(f.destino)||'—'}</div>${obs(f)}<select class="mv" data-mv="${f.id}"><option value="">Mover para outro cartão…</option>${S.filter(s=>s!==f.status).map(s=>`<option>${s}</option>`).join('')}</select>`:''}</div>`}
+const CKS='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const CHV='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ckBtn=f=>{const n=NEXT[f.status];return n?`<button class="ck" data-ck="${f.id}" title="${ACAO[f.status]}" aria-label="${ACAO[f.status]}">${CKS}</button>`:`<button class="ck ok" disabled aria-label="Concluída">${CKS}</button>`};
+function advance(id){const f=fichas.find(x=>x.id===id),n=f&&NEXT[f.status];if(!n)return;say(`NE ${f.ne||'—'} | NF ${f.nf||'—'} movida para "${n}".`);move(id,n)}
+function card(f){const i=S.indexOf(f.status),ab=ABR.has(f.id),v=f.valor!=null&&f.valor!=='';
+return `<div class="ficha s${i}" draggable="true" data-id="${f.id}"><div class="top">${ckBtn(f)}<div class="tt"><b>NE ${esc(f.ne)||'—'}</b><b>NF ${esc(f.nf)||'—'}</b></div>${$('vw').value==='board'?'':`<span class="badge b${i}">${f.status}</span>`}</div>
+<div class="emp">${f.empresa?'Empresa: '+esc(f.empresa):''}</div>
+<div class="dst"><small>${fmt(f.atualizada)}</small><button class="seta${ab?' up':''}" data-seta="${f.id}" aria-label="${ab?'Recolher':'Ver detalhes'}">${CHV}</button></div>
+${ab?`<div class="det"><div class="r"><span>Destino</span><b>${esc(f.destino)||'—'}</b></div>${v?`<div class="r"><span>Valor</span><b>${brl(f.valor)}</b></div>`:''}${f.anexos?`<div class="r"><span>Local dos anexos</span><b>${esc(f.anexos)}</b></div>`:''}${NEXT[f.status]?`<div class="prox"><span>Próximo passo</span><b>${ACAO[f.status]}</b></div>`:''}${f.obs?`<div class="obsb"><span class="lb">Observações</span><div>${fmtObs(f.obs)}</div></div>`:''}<div class="acx"><select class="mv" data-mv="${f.id}"><option value="">Mover para…</option>${S.filter(s=>s!==f.status).map(s=>`<option>${s}</option>`).join('')}</select><button class="btn sec ed">✎ Editar</button></div></div>`:''}</div>`}
 function linha(){const el=$('sync');if(!el)return;let t='● Salvo neste dispositivo (funciona sem internet)';
 try{if(localStorage.getItem('mn_cid')){const last=+localStorage.getItem('mn_last')||0,p=fichas.filter(f=>f.atualizada>last).length+Object.values(tomb()).filter(v=>v>last).length;t+=p?` · ◐ ${p} alteração(ões) ainda não enviada(s) ao Drive`:' · ✔ Drive em dia'}}catch(e){}el.textContent=t}
-function render(){linha();const v=$('vw').value,m=$('main');
+function render(){linha();{const b=$('bFt');b.style.display=ABR.size?'':'none';b.textContent=`Fechar fichas abertas (${ABR.size})`}const v=$('vw').value,m=$('main');
 const vis=fichas.filter(f=>(v==='arq'?f.arquivada:!f.arquivada)&&match(f)).sort((a,b)=>b.atualizada-a.atualizada);
-if(v==='board'){m.innerHTML='<div class="board">'+S.map(s=>{const l=vis.filter(f=>f.status===s);
-return `<div class="col" data-col="${s}"><h2>${s} <span class="n">${l.length}</span><button class="btn sec" style="min-height:32px;padding:2px 10px" data-new="${s}">+</button></h2>${l.map(card).join('')}</div>`}).join('')+'</div>'}
+if(v==='board'){m.innerHTML='<div class="board">'+S.filter(s=>!$('fs').value||s===$('fs').value).map(s=>{const l=vis.filter(f=>f.status===s);
+return `<div class="col c${S.indexOf(s)}" data-col="${s}"><h2>${s} <span class="n">${l.length}</span><button class="btn sec" style="min-height:32px;padding:2px 10px" data-new="${s}">+</button></h2>${l.map(card).join('')}</div>`}).join('')+'</div>'}
 else m.innerHTML='<div class="list">'+(vis.map(card).join('')||'<p>Nenhuma ficha.</p>')+'</div>'}
 document.addEventListener('click',e=>{
 const n=e.target.closest('[data-new]');if(n){return edit(null,n.dataset.new)}
-if(e.target.closest('[data-seta]')){OPEN=!OPEN;render();return}
+const ck=e.target.closest('[data-ck]');if(ck){advance(ck.dataset.ck);return}
+const sb=e.target.closest('[data-seta]');if(sb){const k=sb.dataset.seta;ABR.has(k)?ABR.delete(k):ABR.add(k);render();return}
 const ob=e.target.closest('[data-ob]');if(ob){const i=ob.dataset.ob;EX.has(i)?EX.delete(i):EX.add(i);render();return}
 if(e.target.closest('[data-mv]'))return;
 const c=e.target.closest('.ficha');if(c)edit(c.dataset.id)});
@@ -115,26 +142,26 @@ try{await run('fichas',t=>t.objectStore('fichas').put(f))}catch(e){say('Não foi
 $('bNova').onclick=()=>edit(null,'Pendente');
 async function edit(id,st){const f=id?fichas.find(x=>x.id===id):{id:uid(),ne:'',nf:'',empresa:'',destino:'',anexos:'',obs:'',status:st||'Pendente',criada:Date.now(),atualizada:Date.now(),arquivada:false,novo:true};
 M={f:{...f},files:id?await getFiles(id):[],rem:[],add:[]};drawModal()}
-function drawModal(){const f=M.f,all=[...M.files.filter(x=>!M.rem.includes(x.id)),...M.add];
-$('box').innerHTML=`<div class="mh"><h2 style="margin:0">${f.novo?'Nova ficha':'Ficha'}</h2><button class="btn grn" id="mDone">✔ Marcar como pronto</button></div>
-<h3>Identificação</h3><div class="row"><div><label>NE</label><input id="fne" value="${esc(f.ne)}" inputmode="text"></div><div><label>NF</label><input id="fnf" value="${esc(f.nf)}" inputmode="text"></div></div>
+function drawModal(){const f=M.f,all=[...M.files.filter(x=>!M.rem.includes(x.id)),...M.add],vl=f.valor!=null&&f.valor!==''?Number(f.valor).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
+$('box').innerHTML=`<div class="mh"><div><h2 style="margin:0;font-size:20px">${f.novo?'Nova ficha':'Ficha'}</h2>${f.novo?'':`<small style="color:var(--mut)">Criada em ${fmt(f.criada)} · atualizada em ${fmt(f.atualizada)}</small>`}</div><button class="btn grn" id="mDone">${CKS} Marcar como pronto</button></div>
+<section class="sec"><h3>Identificação</h3><div class="row"><div><label>NE</label><input id="fne" value="${esc(f.ne)}"></div><div><label>NF</label><input id="fnf" value="${esc(f.nf)}"></div></div>
 <label>Nome da empresa</label><input id="fem" value="${esc(f.empresa)}">
-<label>Status</label><select id="fst">${S.map(s=>`<option${s===f.status?' selected':''}>${s}</option>`).join('')}</select>
-<h3>Informações da nota</h3><label>Destino</label><input id="fde" value="${esc(f.destino)}" placeholder="Estoque, Obra X…">
-<div class="row"><div><label>Data de criação</label><input disabled value="${fmt(f.criada)}"></div><div><label>Última atualização</label><input disabled value="${fmt(f.atualizada)}"></div></div>
-<h3>Documentos</h3><label>Local dos anexos</label><input id="fla" value="${esc(f.anexos)}" placeholder="Pasta ou local onde estão os documentos">
-<label>Arquivos anexados</label>${all.map(a=>`<div class="arq"><span>${esc(a.name)}</span><button data-a="open" data-i="${a.id}">Abrir</button><button data-a="dl" data-i="${a.id}">Baixar</button><button data-a="rm" data-i="${a.id}">Remover</button></div>`).join('')||'<small>Nenhum arquivo.</small>'}
-<input type="file" id="ffi" multiple accept="application/pdf,image/*" style="margin-top:8px">
-<h3>Observações</h3><div class="tb"><button type="button" id="tB"><b>B</b></button><button type="button" id="tI"><i>I</i></button><small>Selecione o texto e toque em B (negrito) ou I (itálico)</small></div><textarea id="fob" rows="3">${esc(f.obs)}</textarea>
-<div class="acts"><button class="btn" id="mSave">Salvar</button><button class="btn sec" id="mArq">${f.arquivada?'Desarquivar':'Arquivar'}</button>${f.novo?'':'<button class="btn red" id="mDel">Excluir</button>'}</div><div class="fechar"><button class="btn sec" id="mX">Fechar</button></div>`;
+<label>Etapa</label><select id="fst">${S.map(s=>`<option${s===f.status?' selected':''}>${s}</option>`).join('')}</select></section>
+<section class="sec"><h3>Informações da nota</h3><label>Destino</label><input id="fde" value="${esc(f.destino)}" placeholder="Estoque, Obra X…">
+<label>Valor da nota</label><input id="fva" inputmode="decimal" placeholder="R$ 0,00" value="${vl}"></section>
+<section class="sec"><h3>Documentos</h3><label>Local dos anexos</label><input id="fla" value="${esc(f.anexos)}" placeholder="Pasta ou local onde estão os documentos">
+<label>Arquivos anexados</label>${all.map(a=>`<div class="arq"><span>${a.type&&a.type.startsWith('image')?'🖼':'📄'} ${esc(a.name)}</span><button data-a="open" data-i="${a.id}">Abrir</button><button data-a="dl" data-i="${a.id}">Baixar</button><button data-a="rm" data-i="${a.id}">Remover</button></div>`).join('')||'<small>Nenhum arquivo.</small>'}
+<label class="addf">＋ Adicionar arquivos<input type="file" id="ffi" multiple accept="application/pdf,image/*" hidden></label></section>
+<section class="sec"><h3>Observações</h3><div class="tb"><button type="button" id="tB"><b>B</b></button><button type="button" id="tI"><i>I</i></button><small>Selecione o texto e toque em B ou I</small></div><textarea id="fob" rows="4">${esc(f.obs)}</textarea></section>
+<div class="foot"><div class="acts"><button class="btn" id="mSave">Salvar</button><button class="btn sec" id="mArq">${f.arquivada?'Desarquivar':'Arquivar'}</button>${f.novo?'':'<button class="btn red" id="mDel">Excluir</button>'}</div><div class="fechar"><button class="btn sec" id="mX">Fechar</button></div></div>`;
 $('modal').style.display='flex';
 $('ffi').onchange=e=>{for(const x of e.target.files)M.add.push({id:uid(),fichaId:f.id,name:x.name,type:x.type,blob:x,novo:1});collect();drawModal()};
 ['tB','tI'].forEach(k=>{$(k).onmousedown=e=>e.preventDefault();$(k).onclick=()=>wrap(k==='tB'?'**':'*')});
-$('mX').onclick=close_;$('mSave').onclick=()=>save();$('mDone').onclick=()=>{$('fst').value='Pronto';save()};
+$('mX').onclick=close_;$('mSave').onclick=()=>save();$('mDone').onclick=()=>{$('fst').value='Tudo Pronto';save()};
 $('mArq').onclick=()=>{collect();M.f.arquivada=!M.f.arquivada;save()};
 if($('mDel'))$('mDel').onclick=del;
 $('box').querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>fileAct(b.dataset.a,b.dataset.i))}
-function collect(){const f=M.f;f.ne=$('fne').value.trim();f.nf=$('fnf').value.trim();f.empresa=$('fem').value.trim();f.status=$('fst').value;f.destino=$('fde').value.trim();f.anexos=$('fla').value.trim();f.obs=$('fob').value}
+function collect(){const f=M.f;f.ne=$('fne').value.trim();f.nf=$('fnf').value.trim();f.empresa=$('fem').value.trim();f.status=$('fst').value;f.destino=$('fde').value.trim();f.valor=moeda($('fva').value);f.anexos=$('fla').value.trim();f.obs=$('fob').value}
 function fileAct(a,i){collect();const x=[...M.files,...M.add].find(z=>z.id===i);if(!x)return;
 if(a==='rm'){if(!confirm('Remover este arquivo da ficha?'))return;M.add=M.add.filter(z=>z.id!==i);if(M.files.some(z=>z.id===i))M.rem.push(i);return drawModal()}
 if(a==='open'){const u=URL.createObjectURL(x.blob);if(!window.open(u,'_blank'))saveFile(x.name,x.blob).catch(e=>say(e.message,1));setTimeout(()=>URL.revokeObjectURL(u),60000)}else saveFile(x.name,x.blob).catch(e=>say(e.message,1))}
@@ -169,7 +196,7 @@ async function mergeZip(z,antigoOk){const j=z.file('_dados_minhas_notas.json');l
 if(j){const d=JSON.parse(await j.async('string')),T=tomb();
 for(const [id,em] of Object.entries(d.excluidas||{})){const l=fichas.find(x=>x.id===id);if(l&&em>l.atualizada){await removeLocal(id);fichas=fichas.filter(x=>x.id!==id)}if(em>(T[id]||0))T[id]=em}
 setTomb(T);
-for(const r of d.fichas){const {arqs=[],pasta,...f}=r,l=fichas.find(x=>x.id===f.id);if(f.status==='Aguardando')f.status='Em andamento';
+for(const r of d.fichas){const {arqs=[],pasta,...f}=r,l=fichas.find(x=>x.id===f.id);if(MAP[f.status])f.status=MAP[f.status];
 if(T[f.id]>=f.atualizada||(l&&l.atualizada>=f.atualizada)){ign++;continue}
 const fl=[];for(const a of arqs){const ze=z.file(a.path);if(!ze){falt.push(a.name);continue}fl.push({id:a.id,fichaId:f.id,name:a.name,type:a.type,blob:new Blob([await ze.async('arraybuffer')],{type:a.type})})}
 const old=l?await getFiles(f.id):[];
@@ -192,6 +219,7 @@ const blob=await zip.generateAsync({type:'blob'},m=>say(`Gerando ZIP… ${Math.r
 const nome=`Notas_${new Date().toLocaleDateString('sv-SE')}.zip`;await saveFile(nome,blob);
 say(warns.length?`ZIP gerado, mas ${warns.length} arquivo(s) não foram incluídos: ${warns.join(', ')}`:`Exportação concluída: ${nome}. As fichas originais não foram alteradas.`,warns.length>0)
 }catch(e){say('Falha na exportação: '+(e?.message||e),1)}};
+$('bFt').onclick=()=>{ABR.clear();render()};
 $('bImp').onclick=()=>$('impf').click();
 $('impf').onchange=async e=>{const file=e.target.files[0];if(!file)return;
 try{if(typeof JSZip==='undefined')throw new Error('Biblioteca ZIP não carregada. Abra o app com internet uma vez.');say('Lendo arquivo…');
