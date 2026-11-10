@@ -88,9 +88,9 @@ const DEF=[{id:'Pendente',nome:'Pendente',cor:'#8b95a3',acao:'Lançar no estoque
 const lerEt=()=>{try{const j=JSON.parse(localStorage.getItem('mn_etapas')||'null');if(Array.isArray(j)&&j.length)return j}catch(e){}return DEF.map(e=>({...e}))};
 const lerProj=()=>{try{const j=JSON.parse(localStorage.getItem('mn_projetos')||'null');if(Array.isArray(j)&&j.length)return j}catch(e){}return [{id:'geral',nome:'Geral',etapas:lerEt(),t:+localStorage.getItem('mn_etapas_t')||0}]};
 let PROJ=lerProj(),PA,ETAPAS=[],S=[];
-const vis_=()=>PROJ.filter(p=>!p.del),proj=id=>PROJ.find(p=>p.id===id);
+const vis_=()=>PROJ.filter(p=>!p.del),ativos=()=>PROJ.filter(p=>!p.del&&!p.arq),proj=id=>PROJ.find(p=>p.id===id);
 function salvaProj(){try{localStorage.setItem('mn_projetos',JSON.stringify(PROJ))}catch(e){}}
-function usaProj(id){if(!vis_().length)PROJ.push({id:'p'+Date.now().toString(36),nome:'Geral',etapas:DEF.map(e=>({...e})),t:Date.now()});let p=proj(id);if(!p||p.del)p=vis_()[0];PA=p.id;ETAPAS=p.etapas;S=ETAPAS.map(e=>e.id);try{localStorage.setItem('mn_pa',PA)}catch(e){}}
+function usaProj(id){if(!ativos().length)PROJ.push({id:'p'+Date.now().toString(36),nome:'Geral',etapas:DEF.map(e=>({...e})),t:Date.now()});let p=proj(id);if(!p||p.del)p=ativos()[0];PA=p.id;ETAPAS=p.etapas;S=ETAPAS.map(e=>e.id);try{localStorage.setItem('mn_pa',PA)}catch(e){}}
 usaProj((()=>{try{return localStorage.getItem('mn_pa')}catch(e){return null}})());
 function setEtapas(l,t){const p=proj(PA);p.etapas=l;p.t=t;salvaProj();usaProj(PA)}
 const et=id=>ETAPAS.find(e=>e.id===id),nome=id=>et(id)?.nome||id,cor=id=>et(id)?.cor||'#8b95a3';
@@ -113,7 +113,7 @@ Promise.resolve(fn(t)).then(v=>out=v);t.oncomplete=()=>ok(out);t.onerror=t.onabo
 const req=r=>new Promise((ok,no)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
 const getFiles=id=>req(db.transaction('arquivos').objectStore('arquivos').index('fichaId').getAll(id));
 async function load(){fichas=await req(db.transaction('fichas').objectStore('fichas').getAll());
-const vel=fichas.filter(f=>{let ch=false,p=proj(f.projeto||'geral');if(!p||p.del){p=vis_()[0];ch=true}if(f.projeto!==p.id){f.projeto=p.id;ch=true}const ids=p.etapas.map(e=>e.id);if(!ids.includes(f.status)){f.status=ids.includes(MAP[f.status])?MAP[f.status]:ids[0];ch=true}return ch});if(vel.length){await run('fichas',t=>vel.forEach(f=>t.objectStore('fichas').put(f)))}
+const vel=fichas.filter(f=>{let ch=false,p=proj(f.projeto||'geral');if(!p||p.del){p=ativos()[0];ch=true}if(f.projeto!==p.id){f.projeto=p.id;ch=true}const ids=p.etapas.map(e=>e.id);if(!ids.includes(f.status)){f.status=ids.includes(MAP[f.status])?MAP[f.status]:ids[0];ch=true}return ch});if(vel.length){await run('fichas',t=>vel.forEach(f=>t.objectStore('fichas').put(f)))}
 render()}
 function match(f){const q=$('q').value.trim().toLowerCase();
 if(q&&![f.ne,f.nf,f.empresa,f.destino,f.obs].some(v=>String(v||'').toLowerCase().includes(q)))return false;
@@ -129,7 +129,7 @@ const ckBtn=f=>{const n=prox(f.status);return n?`<button class="ck" data-ck="${f
 function advance(id){const f=fichas.find(x=>x.id===id);if(!f)return;noProj(f,()=>{const n=prox(f.status);if(!n)return;say(`NE ${f.ne||'—'} | NF ${f.nf||'—'} movida para "${nome(n)}".`);move(id,n)})}
 function card(f){const i=S.indexOf(f.status),ab=ABR.has(f.id),v=f.valor!=null&&f.valor!=='';
 return `<div class="ficha" style="--c:${cor(f.status)};border-color:${cor(f.status)}" draggable="true" data-id="${f.id}"><div class="top">${ckBtn(f)}<div class="tt"><b>NE ${esc(f.ne)||'—'}</b><b>NF ${esc(f.nf)||'—'}</b></div>${$('vw').value==='board'&&!GL?'':`<span class="badge" style="background:${cor(f.status)}">${esc(nome(f.status))}</span>`}</div>
-${GL?`<div class="ptag">📁 ${esc((proj(f.projeto)||{}).nome||'')}</div>`:''}<div class="emp">${f.empresa?'Empresa: '+esc(f.empresa):''}</div>
+${GL?`<div class="ptag">📁 ${esc((proj(f.projeto)||{}).nome||'')}${(proj(f.projeto)||{}).arq?' · arquivado':''}</div>`:''}<div class="emp">${f.empresa?'Empresa: '+esc(f.empresa):''}</div>
 <div class="dst"><small>${fmt(f.atualizada)}</small><button class="seta${ab?' up':''}" data-seta="${f.id}" aria-label="${ab?'Recolher':'Ver detalhes'}">${CHV}</button></div>
 ${ab?`<div class="det"><div class="r"><span>Destino</span><b>${esc(f.destino)||'—'}</b></div>${v?`<div class="r"><span>Valor</span><b>${brl(f.valor)}</b></div>`:''}${f.anexos?`<div class="r"><span>Local dos anexos</span><b>${esc(f.anexos)}</b></div>`:''}${prox(f.status)?`<div class="prox"><span>Próximo passo</span><b>${acaoTxt(f)}</b></div>`:''}${f.obs?`<div class="obsb"><span class="lb">Observações</span><div>${fmtObs(f.obs)}</div></div>`:''}<div class="acx"><select class="mv" data-mv="${f.id}"><option value="">Mover para…</option>${S.filter(s=>s!==f.status).map(s=>`<option value="${s}">${esc(nome(s))}</option>`).join('')}</select><button class="btn sec ed">✎ Editar</button></div></div>`:''}</div>`}
 function linha(){const el=$('sync');if(!el)return;let t='● Salvo neste dispositivo (funciona sem internet)';
@@ -160,7 +160,7 @@ async function edit(id,st){const f=id?fichas.find(x=>x.id===id):{id:uid(),ne:'',
 M={f:{...f},files:id?await getFiles(id):[],rem:[],add:[]};drawModal()}
 function drawModal(){const f=M.f,all=[...M.files.filter(x=>!M.rem.includes(x.id)),...M.add],vl=f.valor!=null&&f.valor!==''?Number(f.valor).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
 $('box').innerHTML=`<div class="mh"><div><h2 style="margin:0;font-size:20px">${f.novo?'Nova ficha':'Ficha'}</h2>${f.novo?'':`<small style="color:var(--mut)">Criada em ${fmt(f.criada)} · atualizada em ${fmt(f.atualizada)}</small>`}</div><button class="btn grn" id="mDone">${CKS} Marcar como pronto</button></div>
-<section class="sec"><h3>Identificação</h3><label>Projeto</label><select id="fpj">${vis_().map(p=>`<option value="${p.id}"${p.id===f.projeto?' selected':''}>${esc(p.nome)}</option>`).join('')}</select><div class="row"><div><label>NE</label><input id="fne" value="${esc(f.ne)}"></div><div><label>NF</label><input id="fnf" value="${esc(f.nf)}"></div></div>
+<section class="sec"><h3>Identificação</h3><label>Projeto</label><select id="fpj">${vis_().filter(p=>!p.arq||p.id===f.projeto).map(p=>`<option value="${p.id}"${p.id===f.projeto?' selected':''}>${esc(p.nome)}</option>`).join('')}</select><div class="row"><div><label>NE</label><input id="fne" value="${esc(f.ne)}"></div><div><label>NF</label><input id="fnf" value="${esc(f.nf)}"></div></div>
 <label>Nome da empresa</label><input id="fem" value="${esc(f.empresa)}">
 <label>Etapa</label><select id="fst">${(proj(f.projeto)||proj(PA)).etapas.map(e=>`<option value="${e.id}"${e.id===f.status?' selected':''}>${esc(e.nome)}</option>`).join('')}</select></section>
 <section class="sec"><h3>Informações da nota</h3><label>Destino</label><input id="fde" value="${esc(f.destino)}" placeholder="Estoque, Obra X…">
@@ -282,33 +282,38 @@ const mv=fichas.filter(f=>f.projeto===PA&&!ids.has(f.status));
 try{mv.forEach(f=>{f.status=dest(f.status);f.atualizada=Date.now()});if(mv.length)await run('fichas',t=>mv.forEach(f=>t.objectStore('fichas').put(f)))}catch(e){alert('Erro ao salvar: '+(e?.message||e));return}
 setEtapas(nova,Date.now());close_();fillFs();render();say('Etapas salvas.'+(mv.length?` ${mv.length} ficha(s) movida(s).`:''))}
 $('bEt').onclick=()=>{ET={l:ETAPAS.map(e=>({...e})),mov:{}};drawEtapas()};
-function fillProj(){const s=$('pj');s.innerHTML=vis_().map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('');s.value=PA}
+function fillProj(){const s=$('pj'),o=p=>`<option value="${p.id}">${esc(p.nome)}</option>`,r=PROJ.filter(p=>!p.del&&p.arq);s.innerHTML=ativos().map(o).join('')+(r.length?`<optgroup label="Arquivados">${r.map(o).join('')}</optgroup>`:'');s.value=PA}
 $('pj').onchange=()=>{usaProj($('pj').value);ABR.clear();fillFs();render()};
 let PL=null;
-const vl=()=>PL.l.filter(p=>!p.del);
-function lerPn(){document.querySelectorAll('#box .pn').forEach(i=>{const p=vl()[+i.dataset.k];if(p)p.nome=i.value})}
-function drawProj(){const cnt=id=>fichas.filter(f=>f.projeto===id).length,L=vl();
+const act=()=>PL.l.filter(p=>!p.del&&!p.arq);
+function lerPn(){document.querySelectorAll('#box .pn').forEach(i=>{const p=PL.l[+i.dataset.k];if(p)p.nome=i.value})}
+function drawProj(){const cnt=id=>fichas.filter(f=>f.projeto===id).length,uma=act().length<2;
+const row=(p,k,a)=>`<div class="er"><div class="er1"><input class="pn" data-k="${k}" value="${esc(p.nome)}" placeholder="Nome do projeto"><button data-a="${a?'un':'ar'}" data-k="${k}" title="${a?'Desarquivar':'Arquivar'}"${!a&&uma?' disabled':''}>${a?'↩':'📦'}</button><button data-a="rm" data-k="${k}" title="Remover"${!a&&uma?' disabled':''}>🗑</button></div><small style="color:var(--mut)">${cnt(p.id)} ficha(s) · ${p.etapas.length} etapa(s)</small></div>`;
+const lista=a=>PL.l.map((p,k)=>({p,k})).filter(x=>!x.p.del&&!!x.p.arq===a).map(x=>row(x.p,x.k,a)).join('');
 $('box').innerHTML=`<div class="mh"><h2 style="margin:0;font-size:20px">📁 Projetos</h2></div>
-<p style="color:var(--mut);font-size:14px;margin:8px 0">Cada projeto tem o seu próprio quadro, com etapas e fichas separadas. Um projeto novo começa com as etapas do projeto aberto, e você pode mudá-las em ⚙ Etapas. Ao remover um projeto, as fichas dele vão para o projeto vizinho, na primeira etapa.</p>
-${L.map((p,k)=>`<div class="er"><div class="er1"><input class="pn" data-k="${k}" value="${esc(p.nome)}" placeholder="Nome do projeto"><button data-a="rm" data-k="${k}"${L.length>1?'':' disabled'}>🗑</button></div><small style="color:var(--mut)">${cnt(p.id)} ficha(s) · ${p.etapas.length} etapa(s)</small></div>`).join('')}
+<p style="color:var(--mut);font-size:14px;margin:8px 0">Cada projeto tem o seu próprio quadro, com etapas e fichas separadas. Um projeto novo começa com as etapas do projeto aberto. Arquivar (📦) tira o projeto da lista sem mexer nas fichas dele, e dá para desarquivar depois. Ao remover um projeto, as fichas dele vão para outro projeto, na primeira etapa.</p>
+${lista(false)}
 <button class="btn sec" id="pAdd" style="width:100%;margin-top:10px">＋ Novo projeto</button>
+${PL.l.some(p=>!p.del&&p.arq)?`<h3 style="margin:18px 0 0;font-size:13px;color:var(--navy);text-transform:uppercase;letter-spacing:.04em">Arquivados</h3>${lista(true)}`:''}
 <div class="foot"><div class="acts"><button class="btn" id="pSave">Salvar projetos</button></div><div class="fechar"><button class="btn sec" id="pX">Fechar</button></div></div>`;
 $('modal').style.display='flex';$('pX').onclick=close_;
-$('pAdd').onclick=()=>{lerPn();if(vl().length>=20){alert('Máximo de 20 projetos.');return}PL.l.push({id:'p'+uid(),nome:'Novo projeto',etapas:ETAPAS.map(e=>({...e})),t:Date.now(),novo:1});drawProj()};
-$('box').querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{lerPn();const k=+b.dataset.k,l=vl(),p=l[k],n=cnt(p.id),d=l[k?k-1:1];
-if(n&&!confirm(`Há ${n} ficha(s) em "${p.nome}". Elas serão movidas para "${d.nome}", na primeira etapa. Continuar?`))return;
-PL.mov[p.id]=d.id;if(p.novo)PL.l.splice(PL.l.indexOf(p),1);else{p.del=1;p.t=Date.now()}drawProj()});
+$('pAdd').onclick=()=>{lerPn();if(act().length>=20){alert('Máximo de 20 projetos ativos.');return}PL.l.push({id:'p'+uid(),nome:'Novo projeto',etapas:ETAPAS.map(e=>({...e})),t:Date.now(),novo:1});drawProj()};
+$('box').querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{lerPn();const k=+b.dataset.k,p=PL.l[k],a=b.dataset.a;
+if(a==='ar'){p.arq=1;p.t=Date.now()}
+else if(a==='un'){p.arq=0;p.t=Date.now()}
+else{const n=cnt(p.id),d=act().find(x=>x!==p);if(n&&!confirm(`Há ${n} ficha(s) em "${p.nome}". Elas serão movidas para "${d.nome}", na primeira etapa. Continuar?`))return;PL.mov[p.id]=d.id;if(p.novo)PL.l.splice(k,1);else{p.del=1;p.t=Date.now()}}
+drawProj()});
 $('pSave').onclick=salvarProj}
-async function salvarProj(){lerPn();const L=vl();
+async function salvarProj(){lerPn();const L=PL.l.filter(p=>!p.del);
 if(L.some(p=>!p.nome.trim())){alert('Todos os projetos precisam de nome.');return}
 const nn=L.map(p=>p.nome.trim().toLowerCase());if(new Set(nn).size!==nn.length){alert('Há projetos com o mesmo nome.');return}
 const old=new Map(PROJ.map(p=>[p.id,p]));
-const nova=PL.l.map(p=>{const o=old.get(p.id),nm=p.nome.trim(),ch=!o||o.nome!==nm||!!o.del!==!!p.del;const r={id:p.id,nome:nm,etapas:p.etapas,t:ch?Date.now():o.t};if(p.del)r.del=1;return r});
-const alive=new Set(nova.filter(p=>!p.del).map(p=>p.id));
-const dest=id=>{let d=PL.mov[id],g=0;while(d&&!alive.has(d)&&g++<20)d=PL.mov[d];return alive.has(d)?d:[...alive][0]};
-const mv=fichas.filter(f=>!alive.has(f.projeto));
+const nova=PL.l.map(p=>{const o=old.get(p.id),nm=p.nome.trim(),ch=!o||o.nome!==nm||!!o.del!==!!p.del||!!o.arq!==!!p.arq;const r={id:p.id,nome:nm,etapas:p.etapas,t:ch?Date.now():o.t,arq:p.arq?1:0};if(p.del)r.del=1;return r});
+const exist=new Set(nova.filter(p=>!p.del).map(p=>p.id)),ativ=nova.filter(p=>!p.del&&!p.arq).map(p=>p.id);
+const dest=id=>{let d=PL.mov[id],g=0;while(d&&!exist.has(d)&&g++<20)d=PL.mov[d];return exist.has(d)?d:ativ[0]};
+const mv=fichas.filter(f=>!exist.has(f.projeto));
 try{mv.forEach(f=>{const d=dest(f.projeto);f.projeto=d;f.status=nova.find(p=>p.id===d).etapas[0].id;f.atualizada=Date.now()});if(mv.length)await run('fichas',t=>mv.forEach(f=>t.objectStore('fichas').put(f)))}catch(e){alert('Erro ao salvar: '+(e?.message||e));return}
-PROJ=nova;salvaProj();usaProj(PA);close_();fillProj();fillFs();ABR.clear();render();say('Projetos salvos.'+(mv.length?` ${mv.length} ficha(s) movida(s).`:''))}
+PROJ=nova;salvaProj();usaProj(nova.find(p=>p.id===PA&&p.arq)?null:PA);close_();fillProj();fillFs();ABR.clear();render();say('Projetos salvos.'+(mv.length?` ${mv.length} ficha(s) movida(s).`:''))}
 $('bPj').onclick=()=>{PL={l:PROJ.map(p=>({...p,etapas:p.etapas.map(e=>({...e}))})),mov:{}};drawProj()};
 $('bDrv').onclick=drawDrive;if(localStorage.getItem('mn_cid'))loadGsi().catch(()=>{});
 async function driveSync(){if(DB)return;DB=1;
