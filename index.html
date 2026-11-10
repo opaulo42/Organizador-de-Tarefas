@@ -64,27 +64,41 @@ button,select,input,textarea{font:inherit}
 .foot{position:sticky;bottom:0;background:#fff;margin:14px -16px -16px;padding:12px 16px 16px;border-top:1px solid var(--bd);border-radius:0 0 16px 16px}
 .foot .acts{margin-top:0}.foot .fechar{margin:10px 0 0;padding:0;border:0}#mSave{flex:1 1 130px;font-weight:600}
 .mh .btn{display:flex;align-items:center;gap:6px}
+.er{background:#f6f8fc;border:1px solid var(--bd);border-radius:12px;padding:10px;margin-top:10px;display:grid;gap:8px}.er1{display:flex;gap:6px;align-items:center}.er1 .ec{width:46px;height:40px;padding:2px;flex:none}.er1 .en{flex:1;min-width:0}.er1 button{width:38px;height:40px;border:1px solid var(--bd);border-radius:8px;background:#fff;flex:none}.er1 button:disabled{opacity:.35}.box label.eo{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut);margin:0}.eo input{width:auto}
+#pj{font-weight:600}.er1 .pn{flex:1;min-width:0}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;flex:1 1 220px}.bar .chk input{flex:none;width:20px;height:20px;min-height:0;padding:0}.ptag{font-size:12px;color:var(--mut);margin:6px 0 0}
 </style></head><body>
 <header><h1>📒 Minhas Notas</h1>
 <button class="btn hd" id="bNova">+ Nova ficha</button>
 <button class="btn hd" id="bZip">⬇ Baixar todas as fichas</button>
-<button class="btn hd" id="bImp">⬆ Importar dados</button><input type="file" id="impf" hidden><button class="btn hd" id="bDrv">☁ Drive</button>
+<button class="btn hd" id="bImp">⬆ Importar dados</button><input type="file" id="impf" hidden><button class="btn hd" id="bDrv">☁ Drive</button><button class="btn hd" id="bEt">⚙ Etapas</button>
 <div class="sync" id="sync">● Salvo neste dispositivo (funciona sem internet)</div></header>
 <div class="bar">
+<select id="pj"></select><button class="btn sec" id="bPj">📁 Projetos</button>
 <input id="q" type="search" placeholder="Pesquisar NE, NF, empresa, destino, observações">
-<select id="fs"><option value="">Todos os status</option><option>Pendente</option><option>No Estoque</option><option>No Sistema</option><option>Enviado para Financeiro</option><option>Dar baixa no sistema</option><option>Tudo Pronto</option></select>
+<label class="chk"><input type="checkbox" id="qa"> Buscar em todos os projetos</label>
+<select id="fs"></select>
 <select id="vw"><option value="board">Quadro</option><option value="list">Lista</option><option value="arq">Arquivadas</option></select>
 <button class="btn sec" id="bFt" style="display:none"></button></div>
 <p id="msg"></p>
 <main id="main"></main>
 <div id="modal"><div class="box" id="box"></div></div>
 <script>
-const S=['Pendente','No Estoque','No Sistema','Enviado para Financeiro','Dar baixa no sistema','Tudo Pronto'];
-const NEXT={'Pendente':'No Estoque','No Estoque':'No Sistema','No Sistema':'Enviado para Financeiro','Enviado para Financeiro':'Tudo Pronto','Dar baixa no sistema':'Tudo Pronto'};
-const ACAO={'Pendente':'Lançar no estoque','No Estoque':'Lançar no sistema','No Sistema':'Enviar ao financeiro','Enviado para Financeiro':'Finalizar a nota','Dar baixa no sistema':'Concluir a baixa no sistema'};
+const DEF=[{id:'Pendente',nome:'Pendente',cor:'#8b95a3',acao:'Lançar no estoque',op:0},{id:'No Estoque',nome:'No Estoque',cor:'#2563eb',acao:'Lançar no sistema',op:0},{id:'No Sistema',nome:'No Sistema',cor:'#7c3aed',acao:'Enviar ao financeiro',op:0},{id:'Enviado para Financeiro',nome:'Enviado para Financeiro',cor:'#d97706',acao:'Finalizar a nota',op:0},{id:'Dar baixa no sistema',nome:'Dar baixa no sistema',cor:'#0d9488',acao:'Concluir a baixa no sistema',op:1},{id:'Tudo Pronto',nome:'Tudo Pronto',cor:'#16a34a',acao:'',op:0}];
+const lerEt=()=>{try{const j=JSON.parse(localStorage.getItem('mn_etapas')||'null');if(Array.isArray(j)&&j.length)return j}catch(e){}return DEF.map(e=>({...e}))};
+const lerProj=()=>{try{const j=JSON.parse(localStorage.getItem('mn_projetos')||'null');if(Array.isArray(j)&&j.length)return j}catch(e){}return [{id:'geral',nome:'Geral',etapas:lerEt(),t:+localStorage.getItem('mn_etapas_t')||0}]};
+let PROJ=lerProj(),PA,ETAPAS=[],S=[];
+const vis_=()=>PROJ.filter(p=>!p.del),proj=id=>PROJ.find(p=>p.id===id);
+function salvaProj(){try{localStorage.setItem('mn_projetos',JSON.stringify(PROJ))}catch(e){}}
+function usaProj(id){if(!vis_().length)PROJ.push({id:'p'+Date.now().toString(36),nome:'Geral',etapas:DEF.map(e=>({...e})),t:Date.now()});let p=proj(id);if(!p||p.del)p=vis_()[0];PA=p.id;ETAPAS=p.etapas;S=ETAPAS.map(e=>e.id);try{localStorage.setItem('mn_pa',PA)}catch(e){}}
+usaProj((()=>{try{return localStorage.getItem('mn_pa')}catch(e){return null}})());
+function setEtapas(l,t){const p=proj(PA);p.etapas=l;p.t=t;salvaProj();usaProj(PA)}
+const et=id=>ETAPAS.find(e=>e.id===id),nome=id=>et(id)?.nome||id,cor=id=>et(id)?.cor||'#8b95a3';
+function prox(id){const i=S.indexOf(id);if(i<0)return null;for(let j=i+1;j<ETAPAS.length;j++)if(!ETAPAS[j].op)return ETAPAS[j].id;return null}
+const acaoTxt=f=>{const e=et(f.status),n=prox(f.status);return (e&&e.acao)||(n?'Avançar para '+nome(n):'')};
 const moeda=s=>{s=String(s||'').replace(/[^\d,.\-]/g,'');if(!s)return null;if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');else if(/^\d{1,3}(\.\d{3})+$/.test(s))s=s.replace(/\./g,'');const n=parseFloat(s);return isNaN(n)?null:Math.round(n*100)/100};
 const brl=n=>Number(n).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-const MAP={'Aguardando':'No Sistema','Em andamento':'No Sistema','Cadastrado no Estoque':'No Sistema','Para Fazer':'No Estoque','Cadastrado':'No Estoque','Pronto':'Tudo Pronto'};let EX=new Set(),ABR=new Set();
+const MAP={'Aguardando':'No Sistema','Em andamento':'No Sistema','Cadastrado no Estoque':'No Sistema','Para Fazer':'No Estoque','Cadastrado':'No Estoque','Pronto':'Tudo Pronto'};let EX=new Set(),ABR=new Set(),GL=false;
 let db,fichas=[],M=null;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -99,31 +113,33 @@ Promise.resolve(fn(t)).then(v=>out=v);t.oncomplete=()=>ok(out);t.onerror=t.onabo
 const req=r=>new Promise((ok,no)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
 const getFiles=id=>req(db.transaction('arquivos').objectStore('arquivos').index('fichaId').getAll(id));
 async function load(){fichas=await req(db.transaction('fichas').objectStore('fichas').getAll());
-const vel=fichas.filter(f=>MAP[f.status]);if(vel.length){vel.forEach(f=>f.status=MAP[f.status]);await run('fichas',t=>vel.forEach(f=>t.objectStore('fichas').put(f)))}
+const vel=fichas.filter(f=>{let ch=false,p=proj(f.projeto||'geral');if(!p||p.del){p=vis_()[0];ch=true}if(f.projeto!==p.id){f.projeto=p.id;ch=true}const ids=p.etapas.map(e=>e.id);if(!ids.includes(f.status)){f.status=ids.includes(MAP[f.status])?MAP[f.status]:ids[0];ch=true}return ch});if(vel.length){await run('fichas',t=>vel.forEach(f=>t.objectStore('fichas').put(f)))}
 render()}
 function match(f){const q=$('q').value.trim().toLowerCase();
 if(q&&![f.ne,f.nf,f.empresa,f.destino,f.obs].some(v=>String(v||'').toLowerCase().includes(q)))return false;
-const s=$('fs').value;return !s||f.status===s}
+const s=$('fs').value;return GL||!s||f.status===s}
 const fmtObs=t=>esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\*(.+?)\*/g,'<i>$1</i>');
 function wrap(m){const t=$('fob'),a=t.selectionStart,b=t.selectionEnd,v=t.value;t.value=v.slice(0,a)+m+v.slice(a,b)+m+v.slice(b);t.focus();t.setSelectionRange(a+m.length,b+m.length)}
 function obs(f){if(!f.obs)return '';const o=EX.has(f.id);
 return `<div class="orow"><div class="obs${o?' open':''}">${fmtObs(f.obs)}</div>`+(f.obs.length>70||f.obs.includes('\n')?`<button class="mais" data-ob="${f.id}">${o?'Ler menos':'Ler mais'}</button>`:'')+'</div>'}
+function noProj(f,fn){const pe=ETAPAS,ps=S,p=proj(f.projeto);if(!p||p.id===PA)return fn();ETAPAS=p.etapas;S=ETAPAS.map(e=>e.id);try{return fn()}finally{ETAPAS=pe;S=ps}}
 const CKS='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const CHV='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-const ckBtn=f=>{const n=NEXT[f.status];return n?`<button class="ck" data-ck="${f.id}" title="${ACAO[f.status]}" aria-label="${ACAO[f.status]}">${CKS}</button>`:`<button class="ck ok" disabled aria-label="Concluída">${CKS}</button>`};
-function advance(id){const f=fichas.find(x=>x.id===id),n=f&&NEXT[f.status];if(!n)return;say(`NE ${f.ne||'—'} | NF ${f.nf||'—'} movida para "${n}".`);move(id,n)}
+const ckBtn=f=>{const n=prox(f.status);return n?`<button class="ck" data-ck="${f.id}" title="${acaoTxt(f)}" aria-label="${acaoTxt(f)}">${CKS}</button>`:`<button class="ck ok" disabled aria-label="Concluída">${CKS}</button>`};
+function advance(id){const f=fichas.find(x=>x.id===id);if(!f)return;noProj(f,()=>{const n=prox(f.status);if(!n)return;say(`NE ${f.ne||'—'} | NF ${f.nf||'—'} movida para "${nome(n)}".`);move(id,n)})}
 function card(f){const i=S.indexOf(f.status),ab=ABR.has(f.id),v=f.valor!=null&&f.valor!=='';
-return `<div class="ficha s${i}" draggable="true" data-id="${f.id}"><div class="top">${ckBtn(f)}<div class="tt"><b>NE ${esc(f.ne)||'—'}</b><b>NF ${esc(f.nf)||'—'}</b></div>${$('vw').value==='board'?'':`<span class="badge b${i}">${f.status}</span>`}</div>
-<div class="emp">${f.empresa?'Empresa: '+esc(f.empresa):''}</div>
+return `<div class="ficha" style="--c:${cor(f.status)};border-color:${cor(f.status)}" draggable="true" data-id="${f.id}"><div class="top">${ckBtn(f)}<div class="tt"><b>NE ${esc(f.ne)||'—'}</b><b>NF ${esc(f.nf)||'—'}</b></div>${$('vw').value==='board'&&!GL?'':`<span class="badge" style="background:${cor(f.status)}">${esc(nome(f.status))}</span>`}</div>
+${GL?`<div class="ptag">📁 ${esc((proj(f.projeto)||{}).nome||'')}</div>`:''}<div class="emp">${f.empresa?'Empresa: '+esc(f.empresa):''}</div>
 <div class="dst"><small>${fmt(f.atualizada)}</small><button class="seta${ab?' up':''}" data-seta="${f.id}" aria-label="${ab?'Recolher':'Ver detalhes'}">${CHV}</button></div>
-${ab?`<div class="det"><div class="r"><span>Destino</span><b>${esc(f.destino)||'—'}</b></div>${v?`<div class="r"><span>Valor</span><b>${brl(f.valor)}</b></div>`:''}${f.anexos?`<div class="r"><span>Local dos anexos</span><b>${esc(f.anexos)}</b></div>`:''}${NEXT[f.status]?`<div class="prox"><span>Próximo passo</span><b>${ACAO[f.status]}</b></div>`:''}${f.obs?`<div class="obsb"><span class="lb">Observações</span><div>${fmtObs(f.obs)}</div></div>`:''}<div class="acx"><select class="mv" data-mv="${f.id}"><option value="">Mover para…</option>${S.filter(s=>s!==f.status).map(s=>`<option>${s}</option>`).join('')}</select><button class="btn sec ed">✎ Editar</button></div></div>`:''}</div>`}
+${ab?`<div class="det"><div class="r"><span>Destino</span><b>${esc(f.destino)||'—'}</b></div>${v?`<div class="r"><span>Valor</span><b>${brl(f.valor)}</b></div>`:''}${f.anexos?`<div class="r"><span>Local dos anexos</span><b>${esc(f.anexos)}</b></div>`:''}${prox(f.status)?`<div class="prox"><span>Próximo passo</span><b>${acaoTxt(f)}</b></div>`:''}${f.obs?`<div class="obsb"><span class="lb">Observações</span><div>${fmtObs(f.obs)}</div></div>`:''}<div class="acx"><select class="mv" data-mv="${f.id}"><option value="">Mover para…</option>${S.filter(s=>s!==f.status).map(s=>`<option value="${s}">${esc(nome(s))}</option>`).join('')}</select><button class="btn sec ed">✎ Editar</button></div></div>`:''}</div>`}
 function linha(){const el=$('sync');if(!el)return;let t='● Salvo neste dispositivo (funciona sem internet)';
 try{if(localStorage.getItem('mn_cid')){const last=+localStorage.getItem('mn_last')||0,p=fichas.filter(f=>f.atualizada>last).length+Object.values(tomb()).filter(v=>v>last).length;t+=p?` · ◐ ${p} alteração(ões) ainda não enviada(s) ao Drive`:' · ✔ Drive em dia'}}catch(e){}el.textContent=t}
 function render(){linha();{const b=$('bFt');b.style.display=ABR.size?'':'none';b.textContent=`Fechar fichas abertas (${ABR.size})`}const v=$('vw').value,m=$('main');
-const vis=fichas.filter(f=>(v==='arq'?f.arquivada:!f.arquivada)&&match(f)).sort((a,b)=>b.atualizada-a.atualizada);
-if(v==='board'){m.innerHTML='<div class="board">'+S.filter(s=>!$('fs').value||s===$('fs').value).map(s=>{const l=vis.filter(f=>f.status===s);
-return `<div class="col c${S.indexOf(s)}" data-col="${s}"><h2>${s} <span class="n">${l.length}</span><button class="btn sec" style="min-height:32px;padding:2px 10px" data-new="${s}">+</button></h2>${l.map(card).join('')}</div>`}).join('')+'</div>'}
-else m.innerHTML='<div class="list">'+(vis.map(card).join('')||'<p>Nenhuma ficha.</p>')+'</div>'}
+GL=$('qa').checked;$('fs').disabled=GL;
+const vis=fichas.filter(f=>(GL||f.projeto===PA)&&(v==='arq'?f.arquivada:!f.arquivada)&&match(f)).sort((a,b)=>b.atualizada-a.atualizada);
+if(v==='board'&&!GL){m.innerHTML='<div class="board">'+S.filter(s=>!$('fs').value||s===$('fs').value).map(s=>{const l=vis.filter(f=>f.status===s);
+return `<div class="col" style="border-top:4px solid ${cor(s)}" data-col="${s}"><h2>${esc(nome(s))} <span class="n">${l.length}</span><button class="btn sec" style="min-height:32px;padding:2px 10px" data-new="${s}">+</button></h2>${l.map(card).join('')}</div>`}).join('')+'</div>'}
+else m.innerHTML='<div class="list">'+(vis.map(f=>noProj(f,()=>card(f))).join('')||'<p>Nenhuma ficha.</p>')+'</div>'}
 document.addEventListener('click',e=>{
 const n=e.target.closest('[data-new]');if(n){return edit(null,n.dataset.new)}
 const ck=e.target.closest('[data-ck]');if(ck){advance(ck.dataset.ck);return}
@@ -138,15 +154,15 @@ document.addEventListener('dragleave',e=>e.target.closest?.('.col')?.classList.r
 document.addEventListener('drop',e=>{const c=e.target.closest?.('.col');if(!c)return;e.preventDefault();c.classList.remove('over');move(e.dataTransfer.getData('text/plain'),c.dataset.col)});
 async function move(id,st){const f=fichas.find(x=>x.id===id);if(!f)return;f.status=st;f.atualizada=Date.now();
 try{await run('fichas',t=>t.objectStore('fichas').put(f))}catch(e){say('Não foi possível salvar: '+(e?.message||e),1)}render()}
-['q','fs','vw'].forEach(i=>$(i).addEventListener('input',render));
-$('bNova').onclick=()=>edit(null,'Pendente');
-async function edit(id,st){const f=id?fichas.find(x=>x.id===id):{id:uid(),ne:'',nf:'',empresa:'',destino:'',anexos:'',obs:'',status:st||'Pendente',criada:Date.now(),atualizada:Date.now(),arquivada:false,novo:true};
+['q','fs','vw','qa'].forEach(i=>$(i).addEventListener('input',render));
+$('bNova').onclick=()=>edit(null,S[0]);
+async function edit(id,st){const f=id?fichas.find(x=>x.id===id):{id:uid(),ne:'',nf:'',empresa:'',destino:'',anexos:'',obs:'',status:st||S[0],projeto:PA,criada:Date.now(),atualizada:Date.now(),arquivada:false,novo:true};
 M={f:{...f},files:id?await getFiles(id):[],rem:[],add:[]};drawModal()}
 function drawModal(){const f=M.f,all=[...M.files.filter(x=>!M.rem.includes(x.id)),...M.add],vl=f.valor!=null&&f.valor!==''?Number(f.valor).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'';
 $('box').innerHTML=`<div class="mh"><div><h2 style="margin:0;font-size:20px">${f.novo?'Nova ficha':'Ficha'}</h2>${f.novo?'':`<small style="color:var(--mut)">Criada em ${fmt(f.criada)} · atualizada em ${fmt(f.atualizada)}</small>`}</div><button class="btn grn" id="mDone">${CKS} Marcar como pronto</button></div>
-<section class="sec"><h3>Identificação</h3><div class="row"><div><label>NE</label><input id="fne" value="${esc(f.ne)}"></div><div><label>NF</label><input id="fnf" value="${esc(f.nf)}"></div></div>
+<section class="sec"><h3>Identificação</h3><label>Projeto</label><select id="fpj">${vis_().map(p=>`<option value="${p.id}"${p.id===f.projeto?' selected':''}>${esc(p.nome)}</option>`).join('')}</select><div class="row"><div><label>NE</label><input id="fne" value="${esc(f.ne)}"></div><div><label>NF</label><input id="fnf" value="${esc(f.nf)}"></div></div>
 <label>Nome da empresa</label><input id="fem" value="${esc(f.empresa)}">
-<label>Etapa</label><select id="fst">${S.map(s=>`<option${s===f.status?' selected':''}>${s}</option>`).join('')}</select></section>
+<label>Etapa</label><select id="fst">${(proj(f.projeto)||proj(PA)).etapas.map(e=>`<option value="${e.id}"${e.id===f.status?' selected':''}>${esc(e.nome)}</option>`).join('')}</select></section>
 <section class="sec"><h3>Informações da nota</h3><label>Destino</label><input id="fde" value="${esc(f.destino)}" placeholder="Estoque, Obra X…">
 <label>Valor da nota</label><input id="fva" inputmode="decimal" placeholder="R$ 0,00" value="${vl}"></section>
 <section class="sec"><h3>Documentos</h3><label>Local dos anexos</label><input id="fla" value="${esc(f.anexos)}" placeholder="Pasta ou local onde estão os documentos">
@@ -157,20 +173,20 @@ $('box').innerHTML=`<div class="mh"><div><h2 style="margin:0;font-size:20px">${f
 $('modal').style.display='flex';
 $('ffi').onchange=e=>{for(const x of e.target.files)M.add.push({id:uid(),fichaId:f.id,name:x.name,type:x.type,blob:x,novo:1});collect();drawModal()};
 ['tB','tI'].forEach(k=>{$(k).onmousedown=e=>e.preventDefault();$(k).onclick=()=>wrap(k==='tB'?'**':'*')});
-$('mX').onclick=close_;$('mSave').onclick=()=>save();$('mDone').onclick=()=>{$('fst').value='Tudo Pronto';save()};
+$('mX').onclick=close_;$('mSave').onclick=()=>save();$('mDone').onclick=()=>{{const p=proj($('fpj').value)||proj(PA);$('fst').value=p.etapas[p.etapas.length-1].id};save()};
 $('mArq').onclick=()=>{collect();M.f.arquivada=!M.f.arquivada;save()};
 if($('mDel'))$('mDel').onclick=del;
 $('box').querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>fileAct(b.dataset.a,b.dataset.i))}
-function collect(){const f=M.f;f.ne=$('fne').value.trim();f.nf=$('fnf').value.trim();f.empresa=$('fem').value.trim();f.status=$('fst').value;f.destino=$('fde').value.trim();f.valor=moeda($('fva').value);f.anexos=$('fla').value.trim();f.obs=$('fob').value}
+function collect(){const f=M.f;f.ne=$('fne').value.trim();f.nf=$('fnf').value.trim();f.empresa=$('fem').value.trim();f.projeto=$('fpj').value;f.status=$('fst').value;f.destino=$('fde').value.trim();f.valor=moeda($('fva').value);f.anexos=$('fla').value.trim();f.obs=$('fob').value}
 function fileAct(a,i){collect();const x=[...M.files,...M.add].find(z=>z.id===i);if(!x)return;
 if(a==='rm'){if(!confirm('Remover este arquivo da ficha?'))return;M.add=M.add.filter(z=>z.id!==i);if(M.files.some(z=>z.id===i))M.rem.push(i);return drawModal()}
 if(a==='open'){const u=URL.createObjectURL(x.blob);if(!window.open(u,'_blank'))saveFile(x.name,x.blob).catch(e=>say(e.message,1));setTimeout(()=>URL.revokeObjectURL(u),60000)}else saveFile(x.name,x.blob).catch(e=>say(e.message,1))}
 function close_(){$('modal').style.display='none';M=null}
-async function save(){collect();const f={...M.f};delete f.novo;f.atualizada=Date.now();
+async function save(){collect();const f={...M.f};delete f.novo;f.atualizada=Date.now();const antes=(fichas.find(x=>x.id===f.id)||{projeto:f.projeto}).projeto;
 if(!f.ne&&!f.nf){alert('Informe ao menos NE ou NF.');return}
 try{await run(['fichas','arquivos'],t=>{t.objectStore('fichas').put(f);M.rem.forEach(i=>t.objectStore('arquivos').delete(i));M.add.forEach(a=>t.objectStore('arquivos').put({id:a.id,fichaId:f.id,name:a.name,type:a.type,blob:a.blob}))})
 }catch(e){const q=e&&e.name==='QuotaExceededError';alert(q?'Espaço de armazenamento insuficiente. Os arquivos não puderam ser salvos.':'Erro ao salvar: '+(e?.message||e));return}
-close_();await load();say('Ficha salva neste dispositivo.')}
+close_();await load();say(f.projeto!==antes?`Ficha movida para o projeto "${(proj(f.projeto)||{}).nome}".`:'Ficha salva neste dispositivo.')}
 async function del(){if(!confirm('Excluir esta ficha e todos os seus arquivos?'))return;const id=M.f.id;
 const fs=await getFiles(id);await run(['fichas','arquivos'],t=>{t.objectStore('fichas').delete(id);fs.forEach(a=>t.objectStore('arquivos').delete(a.id))});const T=tomb();T[id]=Date.now();setTomb(T);close_();load()}
 const clean=s=>String(s||'').replace(/[\\/:*?"<>|\u0000-\u001f]/g,'').trim().replace(/\s+/g,'_').replace(/^\.+/,'');
@@ -184,16 +200,18 @@ const tipo=n=>({pdf:'application/pdf',jpg:'image/jpeg',jpeg:'image/jpeg',png:'im
 async function removeLocal(id){const fs=await getFiles(id);await run(['fichas','arquivos'],t=>{t.objectStore('fichas').delete(id);fs.forEach(a=>t.objectStore('arquivos').delete(a.id))})}
 async function buildZip(){const zip=new JSZip(),dirs=new Set(),warns=[],man=[];let n=0;
 for(const f of fichas){n++;say(`Preparando ${n} de ${fichas.length}…`);
-let base=`NE${clean(f.ne)}_NF${clean(f.nf)}_${clean(f.empresa)||f.id.slice(0,6)}`;
+let base=`${clean((proj(f.projeto)||{}).nome)||'Projeto'}/NE${clean(f.ne)}_NF${clean(f.nf)}_${clean(f.empresa)||f.id.slice(0,6)}`;
 if(dirs.has(base.toLowerCase()))base+='_'+f.id.slice(0,6);dirs.add(base.toLowerCase());
 const d=zip.folder(base),names=new Set(),arqs=[];
 for(const a of await getFiles(f.id)){try{const dot=a.name.lastIndexOf('.');const nm=clean(dot>0?a.name.slice(0,dot):a.name)||'arquivo',ext=dot>0?a.name.slice(dot):'';
 const fn=uniq(nm,names,ext);d.file(fn,a.blob);arqs.push({id:a.id,name:a.name,type:a.type,path:base+'/'+fn})}catch(e){warns.push(`${base}/${a.name}`)}}
 man.push({...f,pasta:base,arqs})}
-zip.file('_dados_minhas_notas.json',JSON.stringify({app:'minhas-notas',versao:2,fichas:man,excluidas:tomb()}));
+zip.file('_dados_minhas_notas.json',JSON.stringify({app:'minhas-notas',versao:2,fichas:man,excluidas:tomb(),projetos:PROJ}));
 return {zip,warns}}
 async function mergeZip(z,antigoOk){const j=z.file('_dados_minhas_notas.json');let novas=0,atu=0,ign=0,antigo=false;const falt=[];
 if(j){const d=JSON.parse(await j.async('string')),T=tomb();
+if(Array.isArray(d.projetos)){let mu=false;for(const rp of d.projetos){const lp=proj(rp.id);if(!lp){PROJ.push(rp);mu=true}else if((+rp.t||0)>(+lp.t||0)){Object.assign(lp,rp);mu=true}}if(mu){salvaProj();usaProj(PA);fillProj();fillFs()}}
+else if(d.etapas&&Array.isArray(d.etapas.l)&&d.etapas.l.length){const lp=proj('geral');if(lp&&(+d.etapas.t||0)>(+lp.t||0)){lp.etapas=d.etapas.l;lp.t=+d.etapas.t;salvaProj();usaProj(PA);fillFs()}}
 for(const [id,em] of Object.entries(d.excluidas||{})){const l=fichas.find(x=>x.id===id);if(l&&em>l.atualizada){await removeLocal(id);fichas=fichas.filter(x=>x.id!==id)}if(em>(T[id]||0))T[id]=em}
 setTomb(T);
 for(const r of d.fichas){const {arqs=[],pasta,...f}=r,l=fichas.find(x=>x.id===f.id);if(MAP[f.status])f.status=MAP[f.status];
@@ -238,6 +256,60 @@ $('box').innerHTML=`<h2 style="margin:0">☁ Google Drive</h2>
 <p style="font-size:13px;color:var(--mut)">Última sincronização: ${last?new Date(last).toLocaleString('pt-BR'):'nunca'}</p>
 <div class="acts"><button class="btn" id="dGo">Sincronizar agora</button><button class="btn sec" id="dTr">Escolher outra conta</button></div><div class="fechar"><button class="btn sec" id="dX">Fechar</button></div>`;
 $('modal').style.display='flex';$('dX').onclick=close_;$('dGo').onclick=()=>{localStorage.setItem('mn_cid',$('dcid').value.trim());close_();driveSync()};$('dTr').onclick=()=>{localStorage.setItem('mn_cid',$('dcid').value.trim());localStorage.setItem('mn_sel','1');localStorage.removeItem('mn_fid');TK=null;close_();driveSync()}}
+function fillFs(){const s=$('fs'),v=s.value;s.innerHTML='<option value="">Todos os status</option>'+ETAPAS.map(e=>`<option value="${e.id}">${esc(e.nome)}</option>`).join('');s.value=S.includes(v)?v:''}
+let ET=null;
+function lerRows(){if(!ET)return;document.querySelectorAll('#box .er').forEach((r,k)=>{const e=ET.l[k];if(!e)return;e.nome=r.querySelector('.en').value;e.cor=r.querySelector('.ec').value;e.acao=r.querySelector('.ea').value;e.op=r.querySelector('.eop').checked?1:0})}
+function drawEtapas(){const cnt=id=>fichas.filter(f=>f.projeto===PA&&f.status===id).length,L=ET.l;
+$('box').innerHTML=`<div class="mh"><h2 style="margin:0;font-size:20px">⚙ Etapas — ${esc(proj(PA).nome)}</h2></div>
+<p style="color:var(--mut);font-size:14px;margin:8px 0">Mude nome, cor e ordem, ou crie e remova etapas. As fichas continuam nas etapas delas. Ao remover uma etapa, as fichas dela vão para a etapa vizinha. O ✓ avança para a próxima etapa que não seja opcional, e a última etapa é a de conclusão.</p>
+${L.map((e,k)=>`<div class="er"><div class="er1"><input type="color" class="ec" value="${e.cor}"><input class="en" value="${esc(e.nome)}" placeholder="Nome da etapa"><button data-a="up" data-k="${k}"${k?'':' disabled'}>↑</button><button data-a="dn" data-k="${k}"${k<L.length-1?'':' disabled'}>↓</button><button data-a="rm" data-k="${k}"${L.length>1?'':' disabled'}>🗑</button></div><input class="ea" value="${esc(e.acao||'')}" placeholder="Próximo passo (texto que aparece na ficha)"><label class="eo"><input type="checkbox" class="eop"${e.op?' checked':''}> Opcional (o ✓ pula) · ${cnt(e.id)} ficha(s)</label></div>`).join('')}
+<button class="btn sec" id="eAdd" style="width:100%;margin-top:10px">＋ Adicionar etapa</button>
+<div class="foot"><div class="acts"><button class="btn" id="eSave">Salvar etapas</button></div><div class="fechar"><button class="btn sec" id="eX">Fechar</button></div></div>`;
+$('modal').style.display='flex';$('eX').onclick=close_;
+$('eAdd').onclick=()=>{lerRows();if(ET.l.length>=12){alert('Máximo de 12 etapas.');return}ET.l.push({id:'e'+uid(),nome:'Nova etapa',cor:'#64748b',acao:'',op:0});drawEtapas()};
+$('box').querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{lerRows();const k=+b.dataset.k,a=b.dataset.a,l=ET.l;
+if(a==='up'&&k>0){[l[k-1],l[k]]=[l[k],l[k-1]]}
+else if(a==='dn'&&k<l.length-1){[l[k+1],l[k]]=[l[k],l[k+1]]}
+else if(a==='rm'){const e=l[k],n=cnt(e.id),d=l[k?k-1:1];if(n&&!confirm(`Há ${n} ficha(s) em "${e.nome}". Elas serão movidas para "${d.nome}". Continuar?`))return;ET.mov[e.id]=d.id;l.splice(k,1)}
+drawEtapas()});
+$('eSave').onclick=salvarEtapas}
+async function salvarEtapas(){lerRows();const l=ET.l;
+if(l.some(e=>!e.nome.trim())){alert('Todas as etapas precisam de nome.');return}
+const nn=l.map(e=>e.nome.trim().toLowerCase());if(new Set(nn).size!==nn.length){alert('Há etapas com o mesmo nome.');return}
+const nova=l.map(e=>({id:e.id,nome:e.nome.trim(),cor:e.cor,acao:(e.acao||'').trim(),op:e.op?1:0})),ids=new Set(nova.map(e=>e.id));
+const dest=id=>{let d=ET.mov[id],g=0;while(d&&!ids.has(d)&&g++<20)d=ET.mov[d];return ids.has(d)?d:nova[0].id};
+const mv=fichas.filter(f=>f.projeto===PA&&!ids.has(f.status));
+try{mv.forEach(f=>{f.status=dest(f.status);f.atualizada=Date.now()});if(mv.length)await run('fichas',t=>mv.forEach(f=>t.objectStore('fichas').put(f)))}catch(e){alert('Erro ao salvar: '+(e?.message||e));return}
+setEtapas(nova,Date.now());close_();fillFs();render();say('Etapas salvas.'+(mv.length?` ${mv.length} ficha(s) movida(s).`:''))}
+$('bEt').onclick=()=>{ET={l:ETAPAS.map(e=>({...e})),mov:{}};drawEtapas()};
+function fillProj(){const s=$('pj');s.innerHTML=vis_().map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('');s.value=PA}
+$('pj').onchange=()=>{usaProj($('pj').value);ABR.clear();fillFs();render()};
+let PL=null;
+const vl=()=>PL.l.filter(p=>!p.del);
+function lerPn(){document.querySelectorAll('#box .pn').forEach(i=>{const p=vl()[+i.dataset.k];if(p)p.nome=i.value})}
+function drawProj(){const cnt=id=>fichas.filter(f=>f.projeto===id).length,L=vl();
+$('box').innerHTML=`<div class="mh"><h2 style="margin:0;font-size:20px">📁 Projetos</h2></div>
+<p style="color:var(--mut);font-size:14px;margin:8px 0">Cada projeto tem o seu próprio quadro, com etapas e fichas separadas. Um projeto novo começa com as etapas do projeto aberto, e você pode mudá-las em ⚙ Etapas. Ao remover um projeto, as fichas dele vão para o projeto vizinho, na primeira etapa.</p>
+${L.map((p,k)=>`<div class="er"><div class="er1"><input class="pn" data-k="${k}" value="${esc(p.nome)}" placeholder="Nome do projeto"><button data-a="rm" data-k="${k}"${L.length>1?'':' disabled'}>🗑</button></div><small style="color:var(--mut)">${cnt(p.id)} ficha(s) · ${p.etapas.length} etapa(s)</small></div>`).join('')}
+<button class="btn sec" id="pAdd" style="width:100%;margin-top:10px">＋ Novo projeto</button>
+<div class="foot"><div class="acts"><button class="btn" id="pSave">Salvar projetos</button></div><div class="fechar"><button class="btn sec" id="pX">Fechar</button></div></div>`;
+$('modal').style.display='flex';$('pX').onclick=close_;
+$('pAdd').onclick=()=>{lerPn();if(vl().length>=20){alert('Máximo de 20 projetos.');return}PL.l.push({id:'p'+uid(),nome:'Novo projeto',etapas:ETAPAS.map(e=>({...e})),t:Date.now(),novo:1});drawProj()};
+$('box').querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{lerPn();const k=+b.dataset.k,l=vl(),p=l[k],n=cnt(p.id),d=l[k?k-1:1];
+if(n&&!confirm(`Há ${n} ficha(s) em "${p.nome}". Elas serão movidas para "${d.nome}", na primeira etapa. Continuar?`))return;
+PL.mov[p.id]=d.id;if(p.novo)PL.l.splice(PL.l.indexOf(p),1);else{p.del=1;p.t=Date.now()}drawProj()});
+$('pSave').onclick=salvarProj}
+async function salvarProj(){lerPn();const L=vl();
+if(L.some(p=>!p.nome.trim())){alert('Todos os projetos precisam de nome.');return}
+const nn=L.map(p=>p.nome.trim().toLowerCase());if(new Set(nn).size!==nn.length){alert('Há projetos com o mesmo nome.');return}
+const old=new Map(PROJ.map(p=>[p.id,p]));
+const nova=PL.l.map(p=>{const o=old.get(p.id),nm=p.nome.trim(),ch=!o||o.nome!==nm||!!o.del!==!!p.del;const r={id:p.id,nome:nm,etapas:p.etapas,t:ch?Date.now():o.t};if(p.del)r.del=1;return r});
+const alive=new Set(nova.filter(p=>!p.del).map(p=>p.id));
+const dest=id=>{let d=PL.mov[id],g=0;while(d&&!alive.has(d)&&g++<20)d=PL.mov[d];return alive.has(d)?d:[...alive][0]};
+const mv=fichas.filter(f=>!alive.has(f.projeto));
+try{mv.forEach(f=>{const d=dest(f.projeto);f.projeto=d;f.status=nova.find(p=>p.id===d).etapas[0].id;f.atualizada=Date.now()});if(mv.length)await run('fichas',t=>mv.forEach(f=>t.objectStore('fichas').put(f)))}catch(e){alert('Erro ao salvar: '+(e?.message||e));return}
+PROJ=nova;salvaProj();usaProj(PA);close_();fillProj();fillFs();ABR.clear();render();say('Projetos salvos.'+(mv.length?` ${mv.length} ficha(s) movida(s).`:''))}
+$('bPj').onclick=()=>{PL={l:PROJ.map(p=>({...p,etapas:p.etapas.map(e=>({...e}))})),mov:{}};drawProj()};
 $('bDrv').onclick=drawDrive;if(localStorage.getItem('mn_cid'))loadGsi().catch(()=>{});
 async function driveSync(){if(DB)return;DB=1;
 try{if(typeof JSZip==='undefined')throw new Error('Biblioteca ZIP não carregada.');if(!navigator.onLine)throw new Error('Sem internet.');
@@ -252,5 +324,5 @@ if(!u.ok)throw new Error('Falha ao enviar para o Drive ('+u.status+')');
 localStorage.setItem('mn_fid',id);localStorage.setItem('mn_last',String(t0));render();
 say('Drive sincronizado. '+(r0?'Recebido do Drive: '+msgR(r0):'Primeiro envio concluído.')+(warns.length?` Atenção: ${warns.length} arquivo(s) não entraram no envio.`:''),warns.length>0||!!r0?.falt.length)
 }catch(e){TK=null;say('Falha no Drive: '+(e?.message||e)+' As fichas continuam salvas neste aparelho.',1)}finally{DB=0}}
-open_().then(async d=>{db=d;await load();navigator.storage?.persist?.();}).catch(e=>say('Armazenamento local indisponível: '+(e?.message||e),1));
+open_().then(async d=>{db=d;fillProj();fillFs();await load();navigator.storage?.persist?.();}).catch(e=>say('Armazenamento local indisponível: '+(e?.message||e),1));
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');</script></body></html>
