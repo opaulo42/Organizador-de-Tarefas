@@ -67,6 +67,8 @@ button,select,input,textarea{font:inherit}
 .er{background:#f6f8fc;border:1px solid var(--bd);border-radius:12px;padding:10px;margin-top:10px;display:grid;gap:8px}.er1{display:flex;gap:6px;align-items:center}.er1 .ec{width:46px;height:40px;padding:2px;flex:none}.er1 .en{flex:1;min-width:0}.er1 button{width:38px;height:40px;border:1px solid var(--bd);border-radius:8px;background:#fff;flex:none}.er1 button:disabled{opacity:.35}.box label.eo{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut);margin:0}.eo input{width:auto}
 #pj{font-weight:600}.er1 .pn{flex:1;min-width:0}
 .chk{display:flex;align-items:center;gap:8px;font-size:14px;flex:1 1 220px}.bar .chk input{flex:none;width:20px;height:20px;min-height:0;padding:0}.ptag{font-size:12px;color:var(--mut);margin:6px 0 0}
+@media(min-width:901px){.board{height:var(--bh,auto);grid-template-rows:minmax(0,1fr);align-items:stretch}.col{overflow-y:auto;min-height:0}.col h2{position:sticky;top:-10px;background:inherit;z-index:1}.board{cursor:default}}
+.sd{position:fixed;top:50%;width:38px;height:64px;border:0;border-radius:10px;background:rgba(20,40,75,.75);color:#fff;font-size:30px;line-height:1;cursor:pointer;display:none;z-index:5}#sL{left:4px}#sR{right:4px}
 </style></head><body>
 <header><h1>📒 Minhas Notas</h1>
 <button class="btn hd" id="bNova">+ Nova ficha</button>
@@ -83,6 +85,7 @@ button,select,input,textarea{font:inherit}
 <p id="msg"></p>
 <main id="main"></main>
 <div id="modal"><div class="box" id="box"></div></div>
+<button id="sL" class="sd" aria-label="Rolar para a esquerda">‹</button><button id="sR" class="sd" aria-label="Rolar para a direita">›</button>
 <script>
 const DEF=[{id:'Pendente',nome:'Pendente',cor:'#8b95a3',acao:'Lançar no estoque',op:0},{id:'No Estoque',nome:'No Estoque',cor:'#2563eb',acao:'Lançar no sistema',op:0},{id:'No Sistema',nome:'No Sistema',cor:'#7c3aed',acao:'Enviar ao financeiro',op:0},{id:'Enviado para Financeiro',nome:'Enviado para Financeiro',cor:'#d97706',acao:'Finalizar a nota',op:0},{id:'Dar baixa no sistema',nome:'Dar baixa no sistema',cor:'#0d9488',acao:'Concluir a baixa no sistema',op:1},{id:'Tudo Pronto',nome:'Tudo Pronto',cor:'#16a34a',acao:'',op:0}];
 const lerEt=()=>{try{const j=JSON.parse(localStorage.getItem('mn_etapas')||'null');if(Array.isArray(j)&&j.length)return j}catch(e){}return DEF.map(e=>({...e}))};
@@ -134,7 +137,8 @@ ${GL?`<div class="ptag">📁 ${esc((proj(f.projeto)||{}).nome||'')}${(proj(f.pro
 ${ab?`<div class="det"><div class="r"><span>Destino</span><b>${esc(f.destino)||'—'}</b></div>${v?`<div class="r"><span>Valor</span><b>${brl(f.valor)}</b></div>`:''}${f.anexos?`<div class="r"><span>Local dos anexos</span><b>${esc(f.anexos)}</b></div>`:''}${prox(f.status)?`<div class="prox"><span>Próximo passo</span><b>${acaoTxt(f)}</b></div>`:''}${f.obs?`<div class="obsb"><span class="lb">Observações</span><div>${fmtObs(f.obs)}</div></div>`:''}<div class="acx"><select class="mv" data-mv="${f.id}"><option value="">Mover para…</option>${S.filter(s=>s!==f.status).map(s=>`<option value="${s}">${esc(nome(s))}</option>`).join('')}</select><button class="btn sec ed">✎ Editar</button></div></div>`:''}</div>`}
 function linha(){const el=$('sync');if(!el)return;let t='● Salvo neste dispositivo (funciona sem internet)';
 try{if(localStorage.getItem('mn_cid')){const last=+localStorage.getItem('mn_last')||0,p=fichas.filter(f=>f.atualizada>last).length+Object.values(tomb()).filter(v=>v>last).length;t+=p?` · ◐ ${p} alteração(ões) ainda não enviada(s) ao Drive`:' · ✔ Drive em dia'}}catch(e){}el.textContent=t}
-function render(){linha();{const b=$('bFt');b.style.display=ABR.size?'':'none';b.textContent=`Fechar fichas abertas (${ABR.size})`}const v=$('vw').value,m=$('main');
+function render(){render0();ajustaBoard()}
+function render0(){linha();{const b=$('bFt');b.style.display=ABR.size?'':'none';b.textContent=`Fechar fichas abertas (${ABR.size})`}const v=$('vw').value,m=$('main');
 GL=$('qa').checked;$('fs').disabled=GL;
 const vis=fichas.filter(f=>(GL||f.projeto===PA)&&(v==='arq'?f.arquivada:!f.arquivada)&&match(f)).sort((a,b)=>b.atualizada-a.atualizada);
 if(v==='board'&&!GL){m.innerHTML='<div class="board">'+S.filter(s=>!$('fs').value||s===$('fs').value).map(s=>{const l=vis.filter(f=>f.status===s);
@@ -330,4 +334,20 @@ localStorage.setItem('mn_fid',id);localStorage.setItem('mn_last',String(t0));ren
 say('Drive sincronizado. '+(r0?'Recebido do Drive: '+msgR(r0):'Primeiro envio concluído.')+(warns.length?` Atenção: ${warns.length} arquivo(s) não entraram no envio.`:''),warns.length>0||!!r0?.falt.length)
 }catch(e){TK=null;say('Falha no Drive: '+(e?.message||e)+' As fichas continuam salvas neste aparelho.',1)}finally{DB=0}}
 open_().then(async d=>{db=d;fillProj();fillFs();await load();navigator.storage?.persist?.();}).catch(e=>say('Armazenamento local indisponível: '+(e?.message||e),1));
+
+/* ---- rolagem lateral do quadro (PC) ---- */
+function ajustaBoard(){const b=document.querySelector('.board'),L=$('sL'),R=$('sR');
+if(!b||innerWidth<=900){if(b)b.style.removeProperty('--bh');L.style.display=R.style.display='none';return}
+b.style.setProperty('--bh',Math.max(320,innerHeight-(b.getBoundingClientRect().top+scrollY)-12)+'px');
+const ov=b.scrollWidth>b.clientWidth+2;L.style.display=ov&&b.scrollLeft>2?'block':'none';R.style.display=ov&&b.scrollLeft<b.scrollWidth-b.clientWidth-2?'block':'none';b.onscroll=ajustaBoard}
+$('sL').onclick=()=>document.querySelector('.board').scrollBy({left:-320,behavior:'smooth'});
+$('sR').onclick=()=>document.querySelector('.board').scrollBy({left:320,behavior:'smooth'});
+addEventListener('resize',ajustaBoard);
+{const s0=say;say=function(t,w){s0(t,w);ajustaBoard()}}
+let PAN=null;
+document.addEventListener('mousedown',e=>{const b=e.target.closest&&e.target.closest('.board');if(!b||e.button!==0||e.target.closest('.ficha,button,select,input,a'))return;e.preventDefault();PAN={b,x:e.clientX,l:b.scrollLeft};b.style.cursor='grabbing'});
+document.addEventListener('mousemove',e=>{if(PAN)PAN.b.scrollLeft=PAN.l-(e.clientX-PAN.x)});
+document.addEventListener('mouseup',()=>{if(PAN){PAN.b.style.cursor='';PAN=null}});
+document.addEventListener('wheel',e=>{const t=e.target.closest&&e.target.closest('.col>h2');if(!t)return;const b=t.closest('.board');if(b&&b.scrollWidth>b.clientWidth){b.scrollLeft+=e.deltaY||e.deltaX;e.preventDefault()}},{passive:false});
+document.addEventListener('dragover',e=>{const b=document.querySelector('.board');if(!b)return;const r=b.getBoundingClientRect();if(e.clientX<r.left+70)b.scrollLeft-=18;else if(e.clientX>r.right-70)b.scrollLeft+=18});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');</script></body></html>
